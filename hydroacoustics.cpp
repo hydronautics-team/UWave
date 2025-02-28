@@ -4,7 +4,7 @@
 Hydroacoustics::Hydroacoustics(QObject *parent) : QObject(parent)
 {
     ha.setBaudRate(9600);
-    ha.setPortName("COM11");
+    ha.setPortName("COM19");
     ha.setDataBits(QSerialPort::Data8);
     ha.setStopBits(QSerialPort::OneStop);
     ha.setParity(QSerialPort::NoParity);
@@ -12,6 +12,7 @@ Hydroacoustics::Hydroacoustics(QObject *parent) : QObject(parent)
 
     if (ha.open(QIODevice::ReadWrite)){
         qDebug()<<" port was opened";
+        settings();
     }
     else {
         qDebug()<<" error open port "<< ha.errorString();
@@ -35,8 +36,10 @@ Hydroacoustics::Hydroacoustics(QObject *parent) : QObject(parent)
 
 void Hydroacoustics::settings()
 {
-    char PUWV6[24] = "$PUWV6,1,1,1,1,1,1*32\r\n"; // включаем передачу сообщений о состоянии модема
-    ha.write(PUWV6, 24);
+    // char PUWV6[24] = "$PUWV6,1,1,1,1,1,1*32\r\n"; // включаем передачу сообщений о состоянии модема
+    char PUWV6[18] = "$PUWVF,1,1,0*5E\r\n"; // включаем передачу сообщений о состоянии модема
+    // $PUWVF,1,1,0*5E
+    ha.write(PUWV6, 18);
     qDebug() << "отправил первую команду и жду";
     ha.waitForBytesWritten();
     qDebug() << "все отправилось, жду ответа";
@@ -62,9 +65,10 @@ int Hydroacoustics::crc(QByteArray tmp)
 
 void Hydroacoustics::sendCmd1()
 {
-    char PUWVInvfo[14]="$PUWV?,0*27\r\n";
-    qDebug()<<"bytes written :" << ha.write(PUWVInvfo, 14);
-    ha.waitForBytesWritten();
+    settings();
+    // char PUWVInvfo[14]="$PUWV?,0*27\r\n";
+    // qDebug()<<"bytes written :" << ha.write(PUWVInvfo, 14);
+    // ha.waitForBytesWritten();
 }
 
 void Hydroacoustics::sendCmd2()
